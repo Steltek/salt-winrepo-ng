@@ -28,10 +28,10 @@ jobs:
     if: fromJSON(needs.should-run.outputs.should-run)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: 3.14.4
+          python-version: 3.14.6
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
   gsv:
     name: Get Salt versions
@@ -40,11 +40,12 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       salt-versions-els: ${{ steps.get-salt-versions.outputs.salt-versions-els }}
+      salt-versions-rc: ${{ steps.get-salt-versions.outputs.salt-versions-rc }}
       salt-versions: ${{ steps.get-salt-versions.outputs.salt-versions }}
       salt-latest: ${{ steps.get-salt-versions.outputs.salt-latest }}
     steps:
       - id: get-salt-versions
-        uses: dafyddj/get-salt-versions@91dcf29d77182be6928be76b044491c2c8b6fbac # v3.4.19
+        uses: dafyddj/get-salt-versions@c9f5ab33fda7d9430790a343693a63f69c7ff4e4 # v3.6.1
   refresh_db:
     name: Test `pkg.refresh_db`
     needs: gsv
@@ -54,9 +55,10 @@ jobs:
       matrix:
         salt-version:
           - ${{ fromJSON(needs.gsv.outputs.salt-versions-els) }}
+          - ${{ fromJSON(needs.gsv.outputs.salt-versions-rc) }}
           - ${{ fromJSON(needs.gsv.outputs.salt-versions) }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           path: win/repo-ng
       - name: Setup Salt
@@ -101,7 +103,7 @@ jobs:
       pull-requests: read
     runs-on: windows-2025
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - id: changed-files
         name: Get changed files
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
@@ -144,7 +146,7 @@ jobs:
         with:
           ignore: Collect results
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           sparse-checkout: |
             .cicd/
@@ -169,14 +171,14 @@ jobs:
             echo "::error ::Data file '$REPO_JSON_FILE' not found."
             exit 1
           fi
-      - uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      - uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         if: fromJSON(steps.sem-rel.outputs.new-release-published)
         with:
           commit_message: |
             deploy: ${{ steps.sem-rel.outputs.git-tag }}
           destination_dir: ${{ steps.sem-rel.outputs.git-tag }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+      - uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         if: fromJSON(steps.sem-rel.outputs.new-release-published)
         with:
           commit_message: |
